@@ -63,9 +63,6 @@
         <button id="btnRed" onclick="setColor(0xFF0000, 'btnRed')" style="background:#FF0000; color:white;" class="active-btn">Đỏ</button>
         <button id="btnGreen" onclick="setColor(0x00FF00, 'btnGreen')" style="background:#00FF00; color:black;">Xanh Lá</button>
         <button id="btnYellow" onclick="setColor(0xFFFF00, 'btnYellow')" style="background:#FFFF00; color:black;">Vàng</button>
-
-        <p><b></b></p>
-        </p>
     </div>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -132,6 +129,34 @@
 
         camera.position.set(120, 90, 150);
         controls.target.set(0, 30, -40);
+
+        // ==========================================
+        // HÀM TẠO CHỮ ĐÁNH SỐ
+        // ==========================================
+        function createTextSprite(text) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 128;
+            canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            
+            ctx.font = 'bold 55px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            ctx.lineWidth = 6;
+            ctx.strokeStyle = '#000000';
+            ctx.strokeText(text, 64, 64);
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(text, 64, 64);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            const material = new THREE.SpriteMaterial({ map: texture, depthTest: true });
+            const sprite = new THREE.Sprite(material);
+            
+            sprite.scale.set(2.2, 2.2, 1); 
+            return sprite;
+        }
 
         // ==========================================
         // SIÊU ĐẦU KÉO + RƠ MOÓC + THÙNG HÀNG
@@ -278,7 +303,7 @@
             });
 
             // ==========================================
-            // CONTAINER HÀNG VỚI MÀU SẮC CHUẨN XÁC THEO ẢNH
+            // CONTAINER HÀNG VỚI MÀU SẮC CHUẨN XÁC THEO ẢNH VÀ ĐÁNH SỐ
             // ==========================================
             const cargoGroup = new THREE.Group();
             
@@ -328,6 +353,42 @@
                         containerMeshes.push(smallContainer);
 
                         cargoGroup.add(smallContainer);
+
+                        // --- CODE ĐÁNH SỐ Ở ĐUÔI XE ---
+                        // ==========================================
+                        // CODE ĐÁNH SỐ Ở ĐUÔI XE VÀ 2 BÊN HÔNG
+                        // ==========================================
+                        let textBack = "";
+                        let textSide = "";
+
+                        // 1. Đánh số mặt đuôi xe (z = 0)
+                        if (z === 0) {
+                            if (y === tRows - 1) textBack = (x + 1).toString(); // Hàng ngang trên cùng
+                            else if (x === 0) textBack = (tRows - y).toString(); // Cột dọc bên trái
+                        }
+
+                        // 2. Đánh số 2 mặt bên hông (x = 0 là hông trái, x = tCols - 1 là hông phải)
+                        if (x === 0 || x === tCols - 1) {
+                            if (y === tRows - 1) textSide = (z + 1).toString(); // Hàng ngang dọc theo thân xe
+                            else if (z === 0) textSide = (tRows - y).toString(); // Cột dọc phần đuôi xe
+                        }
+
+                        // Dán số lên mặt đuôi (nhô ra theo trục Z)
+                        if (textBack !== "") {
+                            const spriteBack = createTextSprite(textBack);
+                            spriteBack.position.set(posX, posY, posZ - boxDepth / 2 - 0.2);
+                            cargoGroup.add(spriteBack);
+                        }
+
+                        // Dán số lên mặt hông (nhô ra theo trục X)
+                        if (textSide !== "") {
+                            const spriteSide = createTextSprite(textSide);
+                            // Xác định hướng nhô ra tùy thuộc vào hông trái hay phải
+                            const offsetX = (x === 0) ? -boxWidth / 2 - 0.2 : boxWidth / 2 + 0.2;
+                            spriteSide.position.set(posX + offsetX, posY, posZ);
+                            cargoGroup.add(spriteSide);
+                        }
+                        // ==========================================
                     }
                 }
             }
