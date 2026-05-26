@@ -59,10 +59,13 @@
     <div id="info">Mô phỏng Xe Container 3D<br>Click chuột để xoay - Lăn chuột để Zoom</div>
     
     <div id="controls">
-        <p><b> Chọn màu phân vùng ( giữ shift )</b></p>
-        <button id="btnRed" onclick="setColor(0xFF0000, 'btnRed')" style="background:#FF0000; color:white;" class="active-btn">Đỏ</button>
-        <button id="btnGreen" onclick="setColor(0x00FF00, 'btnGreen')" style="background:#00FF00; color:black;">Xanh Lá</button>
-        <button id="btnYellow" onclick="setColor(0xFFFF00, 'btnYellow')" style="background:#FFFF00; color:black;">Vàng</button>
+        <p><b>
+        - Số thùng màu đỏ: 504 thùng<br>
+        - Số thùng màu xanh: 552 thùng<br>
+        - Số thùng màu vàng: 264 thùng<br>
+        - "     
+        </b></p>
+        
     </div>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -463,45 +466,7 @@
 
         const windSystem = new THREE.Points(windGeometry, windMaterial);
         scene.add(windSystem);
-
-        // ==========================================
-        // TƯƠNG TÁC TÔ MÀU
-        // ==========================================
-        const raycaster = new THREE.Raycaster();
-        const mouse = new THREE.Vector2();
-
-        window.addEventListener('click', (event) => {
-            if (event.target.tagName === 'BUTTON' || event.target.closest('#controls')) return; 
-            if (!event.shiftKey) return; 
-
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-            raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(containerMeshes);
-
-            if (intersects.length > 0) {
-                const clickedContainer = intersects[0].object;
-                const { gridX, gridZ } = clickedContainer.userData;
-                
-                if (event.ctrlKey) {
-                    containerMeshes.forEach(c => {
-                        if (c.userData.gridX === gridX && c.userData.gridZ === gridZ) {
-                            c.material.color.setHex(activeColor);
-                        }
-                    });
-                } 
-                else {
-                    clickedContainer.material.color.setHex(activeColor);
-                }
-            }
-        });
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+        
 
         // --- VÒNG LẶP CHUYỂN ĐỘNG ---
         function animate() {
