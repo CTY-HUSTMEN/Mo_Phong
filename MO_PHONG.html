@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mô phỏng Bãi Container 3D - Full Xe & Hàng</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden; 
+            background-color: #87CEEB; 
+        }
+        #info {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            color: #333;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            pointer-events: none; 
+            z-index: 100;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+        }
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: Arial, sans-serif;
+            z-index: 100;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        #controls button {
+            margin: 5px 2px;
+            padding: 8px 15px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        #controls button:hover {
+            transform: scale(1.05);
+        }
+        #controls p {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        .active-btn {
+            border: 2px solid #000 !important;
+            box-shadow: 0 0 8px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+    <div id="info">Mô phỏng Xe Container 3D<br>Click chuột để xoay - Lăn chuột để Zoom</div>
+    
+    <div id="controls">
+        <p><b> Chọn màu phân vùng</b></p>
+        <button id="btnRed" onclick="setColor(0xFF0000, 'btnRed')" style="background:#FF0000; color:white;" class="active-btn">Đỏ</button>
+        <button id="btnGreen" onclick="setColor(0x00FF00, 'btnGreen')" style="background:#00FF00; color:black;">Xanh Lá</button>
+        <button id="btnYellow" onclick="setColor(0xFFFF00, 'btnYellow')" style="background:#FFFF00; color:black;">Vàng</button>
+
+        <p><b></b></p>
+        </p>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        // --- CẤU HÌNH UI MÀU ---
+        let activeColor = 0xFF0000; 
+
+        window.setColor = function(hex, btnId) {
+            activeColor = hex;
+            document.getElementById('btnRed').classList.remove('active-btn');
+            document.getElementById('btnGreen').classList.remove('active-btn');
+            document.getElementById('btnYellow').classList.remove('active-btn');
+            document.getElementById(btnId).classList.add('active-btn');
+        };
+
+        window.colorAll = function() {
+            containerMeshes.forEach(c => {
+                c.material.color.setHex(activeColor);
+            });
+        };
+
+        // --- CẤU HÌNH TRỰC QUAN THREE.JS ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xd3d3d3);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
+        dirLight.position.set(60, 150, 100);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        const containerGroup = new THREE.Group();
+        scene.add(containerGroup);
+
+        const boxWidth = 2.4;  
+        const boxHeight = 2.6; 
+        const boxDepth = 6.0;  
+        const gap = 0.2; 
+
+        const containerMeshes = [];
+        const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth);
+
+        const planeGeo = new THREE.PlaneGeometry(600, 600);
+        const planeMat = new THREE.MeshLambertMaterial({ color: 0x555555 });
+        const plane = new THREE.Mesh(planeGeo, planeMat);
+        plane.rotation.x = -Math.PI / 2;
+        plane.receiveShadow = true;
+        scene.add(plane);
+
+        camera.position.set(120, 90, 150);
+        controls.target.set(0, 30, -40);
+
+        // ==========================================
+        // SIÊU ĐẦU KÉO + RƠ MOÓC + THÙNG HÀNG
+        // ==========================================
+        function createMegaTruckHead() {
+            const truck = new THREE.Group();
+
+            const bodyMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
+            const darkMat = new THREE.MeshLambertMaterial({ color: 0x181818 });
+            const chromeMat = new THREE.MeshLambertMaterial({ color: 0xcccccc });
+            const glassMat = new THREE.MeshLambertMaterial({ color: 0x050505 });
+            const lightMat = new THREE.MeshBasicMaterial({ color: 0xffffee });
+
+            // 1. CABIN ĐẦU KÉO
+            const shape = new THREE.Shape();
+            shape.moveTo(0, 4.5);       
+            shape.lineTo(55, 4.5);      
+            shape.lineTo(55, 6);        
+            shape.lineTo(52, 14.5);     
+            shape.lineTo(38, 16.5);     
+            shape.lineTo(31, 24);       
+            shape.lineTo(24, 28);       
+            shape.lineTo(2, 26);        
+            shape.lineTo(0, 24);        
+            shape.lineTo(0, 4.5);       
+
+            const extrudeSettings = { depth: 24, bevelEnabled: true, bevelSegments: 3, steps: 2, bevelSize: 0.6, bevelThickness: 0.6 };
+            const bodyGeo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+            const mainBody = new THREE.Mesh(bodyGeo, bodyMat);
+            mainBody.rotation.y = -Math.PI / 2;
+            mainBody.position.set(12, 0, -27.5); 
+            mainBody.castShadow = true;
+            truck.add(mainBody);
+
+            // 2. LƯỜN XE
+            const skirtGeo = new THREE.BoxGeometry(25.5, 5, 36);
+            const skirt = new THREE.Mesh(skirtGeo, darkMat);
+            skirt.position.set(0, 4.5, -2);
+            skirt.castShadow = true;
+            truck.add(skirt);
+
+            // 3. CẢN TRƯỚC
+            const bumperGeo = new THREE.BoxGeometry(26, 4, 3);
+            const bumper = new THREE.Mesh(bumperGeo, darkMat);
+            bumper.position.set(0, 4.5, 26.5);
+            bumper.castShadow = true;
+            truck.add(bumper);
+
+            // 4. LƯỚI TẢN NHIỆT
+            const grilleGeo = new THREE.BoxGeometry(16, 9.5, 0.6);
+            const grille = new THREE.Mesh(grilleGeo, darkMat); 
+            grille.position.set(0, 10.5, 26.2);
+            grille.rotation.x = -0.22; 
+            truck.add(grille);
+
+            for(let i = -6.5; i <= 6.5; i += 1.3) {
+                const barGeo = new THREE.BoxGeometry(0.5, 9.5, 0.8);
+                const bar = new THREE.Mesh(barGeo, chromeMat);
+                bar.position.set(i, 10.5, 26.3);
+                bar.rotation.x = grille.rotation.x;
+                truck.add(bar);
+            }
+
+            // 5. KÍNH
+            const windGeo = new THREE.BoxGeometry(22.5, 11, 0.6);
+            const windshield = new THREE.Mesh(windGeo, glassMat);
+            windshield.position.set(0, 20.3, 7.3);
+            windshield.rotation.x = -0.7; 
+            truck.add(windshield);
+
+            const sideWindowGeo = new THREE.BoxGeometry(24.2, 7.5, 7);
+            const sideWindow = new THREE.Mesh(sideWindowGeo, glassMat);
+            sideWindow.position.set(0, 20, -1);
+            truck.add(sideWindow);
+
+            // BÁNH XE
+            const wheelRadius = 4.8;
+            const wheelWidth = 3.5;
+            const rimRadius = 3.0;
+            const tireGeo = new THREE.CylinderGeometry(wheelRadius, wheelRadius, wheelWidth, 32);
+            const rimGeo = new THREE.CylinderGeometry(rimRadius, rimRadius, wheelWidth + 0.2, 24);
+            const tireMat = new THREE.MeshLambertMaterial({ color: 0x111111 });
+            const edgeX = 13.5;
+
+            // 6. BÁNH XE ĐẦU KÉO
+            const wheelZs = [20, -13, -22]; 
+            wheelZs.forEach(z => {
+                const lTire = new THREE.Mesh(tireGeo, tireMat);
+                const lRim = new THREE.Mesh(rimGeo, chromeMat);
+                lTire.rotation.z = Math.PI / 2; lRim.rotation.z = Math.PI / 2;
+                lTire.position.set(-edgeX, wheelRadius, z);
+                lRim.position.set(-edgeX, wheelRadius, z);
+                truck.add(lTire); truck.add(lRim);
+
+                const rTire = new THREE.Mesh(tireGeo, tireMat);
+                const rRim = new THREE.Mesh(rimGeo, chromeMat);
+                rTire.rotation.z = Math.PI / 2; rRim.rotation.z = Math.PI / 2;
+                rTire.position.set(edgeX, wheelRadius, z);
+                rRim.position.set(edgeX, wheelRadius, z);
+                truck.add(rTire); truck.add(rRim);
+            });
+
+            // 7. ĐÈN & ỐNG XẢ
+            const hlGeo = new THREE.BoxGeometry(3.5, 2.5, 1);
+            const lHl = new THREE.Mesh(hlGeo, lightMat); lHl.position.set(-10, 8.5, 26.8); lHl.rotation.x = -0.22; truck.add(lHl);
+            const rHl = new THREE.Mesh(hlGeo, lightMat); rHl.position.set(10, 8.5, 26.8); rHl.rotation.x = -0.22; truck.add(rHl);
+
+            const pipeGeo = new THREE.CylinderGeometry(0.8, 0.8, 22, 16);
+            const lPipe = new THREE.Mesh(pipeGeo, chromeMat); lPipe.position.set(-12.5, 18, -10); truck.add(lPipe);
+            const rPipe = new THREE.Mesh(pipeGeo, chromeMat); rPipe.position.set(12.5, 18, -10); truck.add(rPipe);
+
+            // ==========================================
+            // RƠ-MOÓC VÀ CONTAINER TRÊN XE
+            // ==========================================
+            const trailerLength = 75;
+            const trailerGeo = new THREE.BoxGeometry(24, 2, trailerLength);
+            const trailer = new THREE.Mesh(trailerGeo, darkMat);
+            trailer.position.set(0, 10, -58); 
+            trailer.castShadow = true;
+            truck.add(trailer);
+
+            // Mâm xoay nối
+            const fifthWheelGeo = new THREE.BoxGeometry(10, 2, 10);
+            const fifthWheel = new THREE.Mesh(fifthWheelGeo, darkMat);
+            fifthWheel.position.set(0, 11, -22);
+            truck.add(fifthWheel);
+
+            // Bánh xe rơ-moóc
+            const trailerWheelZs = [-70, -78, -86];
+            trailerWheelZs.forEach(z => {
+                const lTire = new THREE.Mesh(tireGeo, tireMat);
+                const lRim = new THREE.Mesh(rimGeo, chromeMat);
+                lTire.rotation.z = Math.PI / 2; lRim.rotation.z = Math.PI / 2;
+                lTire.position.set(-edgeX, wheelRadius, z);
+                lRim.position.set(-edgeX, wheelRadius, z);
+                truck.add(lTire); truck.add(lRim);
+
+                const rTire = new THREE.Mesh(tireGeo, tireMat);
+                const rRim = new THREE.Mesh(rimGeo, chromeMat);
+                rTire.rotation.z = Math.PI / 2; rRim.rotation.z = Math.PI / 2;
+                rTire.position.set(edgeX, wheelRadius, z);
+                rRim.position.set(edgeX, wheelRadius, z);
+                truck.add(rTire); truck.add(rRim);
+            });
+
+            // ==========================================
+            // CONTAINER HÀNG VỚI MÀU SẮC CHUẨN XÁC THEO ẢNH
+            // ==========================================
+            const cargoGroup = new THREE.Group();
+            
+            const tCols = 12;  
+            const tRows = 11;  
+            const tDepth = 10; 
+            
+            for (let x = 0; x < tCols; x++) {
+                for (let y = 0; y < tRows; y++) {
+                    for (let z = 0; z < tDepth; z++) {
+                        let targetColor;
+                        
+                        // Lọc theo trục Z (Chiều dọc xe)
+                        if (z < 2) { 
+                            // 2 cột đuôi xe hoàn toàn màu Vàng
+                            targetColor = 0xFFFF00; 
+                        } else if (z >= 8) { 
+                            // 2 cột đầu xe hoàn toàn màu Xanh
+                            targetColor = 0x00FF00; 
+                        } else {
+                            // 6 cột ở giữa: Lọc tiếp theo trục Y (Chiều cao)
+                            if (y < 2 || y > 8) {
+                                // 2 hàng dưới cùng (y=0,1) và 2 hàng trên cùng (y=9,10) màu Xanh
+                                targetColor = 0x00FF00;
+                            } else {
+                                // 7 hàng lõi giữa màu Đỏ
+                                targetColor = 0xFF0000;
+                            }
+                        }
+
+                        const material = new THREE.MeshLambertMaterial({ color: targetColor });
+                        const smallContainer = new THREE.Mesh(geometry, material);
+                        
+                        const posX = (x - tCols/2 + 0.5) * (boxWidth + gap);
+                        const posY = (y) * (boxHeight + gap) + (boxHeight/2);
+                        const posZ = (z - tDepth/2 + 0.5) * (boxDepth + gap);
+                        
+                        smallContainer.position.set(posX, posY, posZ);
+                        smallContainer.castShadow = true;
+                        smallContainer.receiveShadow = true;
+
+                        const edges = new THREE.EdgesGeometry(geometry);
+                        const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x333333, linewidth: 1 }));
+                        smallContainer.add(line);
+
+                        smallContainer.userData = { gridX: 'truck_' + x, gridY: 'truck_' + y, gridZ: 'truck_' + z };
+                        containerMeshes.push(smallContainer);
+
+                        cargoGroup.add(smallContainer);
+                    }
+                }
+            }
+
+            cargoGroup.position.set(0, 11, -65); 
+            truck.add(cargoGroup);
+
+            return truck;
+        }
+
+        const truck = createMegaTruckHead();
+        truck.position.set(0, 0, 0); 
+        scene.add(truck);
+
+        // ==========================================
+        // HIỆU ỨNG ĐIỀU HOÀ CONTAINER LẠNH (REEFER) - TOÀN BỘ CONTAINER
+        // ==========================================
+        function createColdAirTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 32;
+            canvas.height = 32;
+            const context = canvas.getContext('2d');
+            const gradient = context.createRadialGradient(16, 16, 0, 16, 16, 16);
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            gradient.addColorStop(0.3, 'rgba(150, 220, 255, 0.8)'); 
+            gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            context.fillStyle = gradient;
+            context.fillRect(0, 0, 32, 32);
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        const windParticlesCount = 800; 
+        const windGeometry = new THREE.BufferGeometry();
+        const windPositions = new Float32Array(windParticlesCount * 3);
+        
+        const windThetas = new Float32Array(windParticlesCount); 
+        const windVelocities = [];
+
+        const windZMin = -95.9;  
+        const windZMax = -34.1;  
+        const windYTop = 42;     
+        const windYBottom = 11;  
+        const windCenterX = 0;
+        const windXSpread = 32;  
+
+        const zCenter = (windZMax + windZMin) / 2; 
+        const yCenter = (windYTop + windYBottom) / 2; 
+        const zRadius = (windZMax - windZMin) / 2 + 0.5; 
+        const yRadius = (windYTop - windYBottom) / 2 + 0.5;
+
+        for (let i = 0; i < windParticlesCount; i++) {
+            windPositions[i * 3] = windCenterX + (Math.random() - 0.5) * windXSpread;
+            windThetas[i] = Math.random() * Math.PI * 2;
+            
+            windPositions[i * 3 + 1] = yCenter + Math.sin(windThetas[i]) * yRadius; 
+            windPositions[i * 3 + 2] = zCenter + Math.cos(windThetas[i]) * zRadius; 
+            
+            windVelocities.push(0.005 + Math.random() * 0.01); 
+        }
+
+        windGeometry.setAttribute('position', new THREE.BufferAttribute(windPositions, 3));
+
+        const windMaterial = new THREE.PointsMaterial({
+            color: 0xffffff,
+            size: 9.0, 
+            map: createColdAirTexture(),
+            transparent: true,
+            opacity: 0.6,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending
+        });
+
+        const windSystem = new THREE.Points(windGeometry, windMaterial);
+        scene.add(windSystem);
+
+        // ==========================================
+        // TƯƠNG TÁC TÔ MÀU
+        // ==========================================
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        window.addEventListener('click', (event) => {
+            if (event.target.tagName === 'BUTTON' || event.target.closest('#controls')) return; 
+            if (!event.shiftKey) return; 
+
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(containerMeshes);
+
+            if (intersects.length > 0) {
+                const clickedContainer = intersects[0].object;
+                const { gridX, gridZ } = clickedContainer.userData;
+                
+                if (event.ctrlKey) {
+                    containerMeshes.forEach(c => {
+                        if (c.userData.gridX === gridX && c.userData.gridZ === gridZ) {
+                            c.material.color.setHex(activeColor);
+                        }
+                    });
+                } 
+                else {
+                    clickedContainer.material.color.setHex(activeColor);
+                }
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // --- VÒNG LẶP CHUYỂN ĐỘNG ---
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+
+            const positions = windSystem.geometry.attributes.position.array;
+
+            for (let i = 0; i < windParticlesCount; i++) {
+                windThetas[i] -= windVelocities[i];
+                if (windThetas[i] < 0) windThetas[i] += Math.PI * 2;
+
+                positions[i * 3] += Math.sin(windThetas[i] * 8) * 0.05;
+                
+                if (positions[i * 3] < -(windXSpread/2)) positions[i * 3] = (windXSpread/2);
+                if (positions[i * 3] > (windXSpread/2)) positions[i * 3] = -(windXSpread/2);
+
+                positions[i * 3 + 1] = yCenter + Math.sin(windThetas[i]) * yRadius;
+                positions[i * 3 + 2] = zCenter + Math.cos(windThetas[i]) * zRadius;
+            }
+            
+            windSystem.geometry.attributes.position.needsUpdate = true;
+
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>
