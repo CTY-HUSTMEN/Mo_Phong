@@ -26,13 +26,24 @@
             position: absolute;
             bottom: 20px;
             left: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 15px;
-            border-radius: 8px;
-            font-family: Arial, sans-serif;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 12px;
+            font-family: 'Segoe UI', Arial, sans-serif;
             z-index: 100;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            font-size: 15px;
+            line-height: 1.6;
+            color: #333;
+            max-width: 350px;
+            border-left: 5px solid #333; /* Tạo điểm nhấn */
         }
+
+        #controls h4 { margin: 0 0 10px 0; color: #000; }
+        #controls ul { list-style: none; padding: 0; margin: 0; }
+        #controls li { margin-bottom: 8px; }
+        .red-text { color: #d32f2f; font-weight: bold; }
+        .green-text { color: #388e3c; font-weight: bold; }
         #controls button {
             margin: 5px 2px;
             padding: 8px 15px;
@@ -56,16 +67,21 @@
     </style>
 </head>
 <body>
-    <div id="info">Mô phỏng Xe Container 3D<br>Click chuột để xoay - Lăn chuột để Zoom</div>
-    
     <div id="controls">
-        <p><b>
-        - Số thùng màu đỏ: 504 thùng<br>
-        - Số thùng màu xanh: 552 thùng<br>
-        - Số thùng màu vàng: 264 thùng<br>
-        - "     
-        </b></p>
-        
+        <h4>Tổng có 1320 thùng trong đó có:</h4>
+        <ul>
+            <li><span class="red-text">● 600</span> thùng nguy hiểm (Đỏ)</li>
+            <li><span class="green-text">● 720</span> thùng an toàn (Xanh)</li>
+        </ul>
+        <hr>
+        <p><b>Đối với:</b></p>
+        <ul>
+            <li><b> Thùng an toàn:</b> 3-4 gói E5 + 1 gói CS5 (5g)</li>
+            <li><b> Thùng không an toàn:</b> 5-6 gói E5 + 2 gói CS10 (10g)</li>
+        </ul>
+        <p style="color: #d32f2f; font-size: 13px;">
+            <b>Lưu ý:</b> Không bật chế độ tiết kiệm, để gió mức cao nhất.
+        </p>
     </div>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -321,8 +337,13 @@
                         
                         // Lọc theo trục Z (Chiều dọc xe)
                         if (z < 2) { 
-                            // 2 cột đuôi xe hoàn toàn màu Vàng
-                            targetColor = 0xFFFF00; 
+                            if (y < 2 || y > 8) {
+                                // 2 hàng dưới cùng (y=0,1) và 2 hàng trên cùng (y=9,10) màu Xanh
+                                targetColor = 0x00FF00;
+                            } else {
+                                // 7 hàng lõi giữa màu Đỏ
+                                targetColor = 0xFF0000;
+                            }
                         } else if (z >= 8) { 
                             // 2 cột đầu xe hoàn toàn màu Xanh
                             targetColor = 0x00FF00; 
