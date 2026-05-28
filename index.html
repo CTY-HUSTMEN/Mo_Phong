@@ -22,90 +22,67 @@
             z-index: 100;
             text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
         }
-        #controls {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    right: 20px; /* Thêm thuộc tính này để thanh điều khiển trải dài sát lề phải */
-    background: rgba(255, 255, 255, 0.95);
-    padding: 15px 25px;
-    border-radius: 12px;
-    font-family: 'Segoe UI', Arial, sans-serif;
-    z-index: 100;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-    font-size: 15px;
-    color: #333;
-    border-left: 5px solid #333;
-    
-    /* Các thuộc tính Flexbox để trải ngang */
-    display: flex;
-    align-items: center; /* Căn giữa các phần tử theo chiều dọc */
-    justify-content: flex-start;
-    gap: 20px; /* Khoảng cách giữa các cụm nội dung */
-    white-space: nowrap; /* Ép text không tự động xuống dòng */
-    overflow-x: auto; /* Cho phép cuộn ngang nếu màn hình quá nhỏ, tránh vỡ layout */
-}
-
-    #controls {
+       #controls {
         position: absolute;
         top: 20px;
         left: 20px;
-        right: 20px;
-        background: rgba(255, 255, 255, 0.95);
+        /* Bỏ right: 20px để không bị kéo giãn hết màn hình */
+        background: rgba(255, 255, 255, 0.96);
         padding: 15px 20px;
         border-radius: 12px;
         font-family: 'Segoe UI', Arial, sans-serif;
         z-index: 100;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        font-size: 14px; /* Giảm nhẹ font chữ để dễ nằm trên 1 dòng hơn */
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        font-size: 13.5px;
         color: #333;
-        border-left: 5px solid #333;
+        border-left: 5px solid #2196F3; /* Đổi màu viền xanh cho hiện đại */
         
-        /* Flexbox chính */
+        /* Chuyển layout từ hàng ngang thành cột dọc gọn gàng */
         display: flex;
-        align-items: center; /* Căn giữa toàn bộ cụm theo chiều dọc */
-        gap: 15px; /* Khoảng cách đều giữa các cụm */
-        white-space: nowrap; 
-        overflow-x: auto; 
+        flex-direction: column;
+        gap: 10px;
+        
+        /* Giới hạn chiều rộng cố định để tạo thành một Box thông tin */
+        width: 360px; 
+        box-sizing: border-box;
     }
 
-    /* Xóa margin mặc định và ép căn giữa cho tiêu đề/đoạn văn */
-    #controls h4, 
-    #controls p { 
-        margin: 0; 
-        display: flex; 
-        align-items: center; 
-    }
-
-    #controls h4 {
+    /* Định dạng tiêu đề */
+    #controls h4 { 
+        margin: 0;
         color: #000;
+        font-size: 15px;
+        font-weight: bold;
     }
 
-    /* Ép thẻ ul thành hàng ngang và căn giữa */
+    /* Các nhóm danh sách sẽ xếp chồng theo hàng dọc */
     #controls ul { 
         list-style: none; 
         padding: 0; 
         margin: 0; 
         display: flex; 
-        align-items: center; 
-        gap: 15px; 
+        flex-direction: column; 
+        gap: 6px; 
     }
 
-    /* Ép thẻ li căn giữa (giúp dấu chấm tròn và chữ thẳng hàng) */
+    /* Từng dòng văn bản bên trong */
     #controls li { 
         margin: 0; 
         display: flex; 
-        align-items: center; 
-        gap: 5px; /* Khoảng cách giữa span và text trong li */
+        align-items: flex-start; 
+        gap: 6px;
+        /* Cho phép chữ tự động xuống dòng mượt mà nếu quá dài, không sinh scrollbar */
+        white-space: normal; 
+        line-height: 1.4;
     }
 
-    /* Tinh chỉnh đường kẻ dọc để nó nằm giữa đẹp mắt */
+    /* Thay đổi đường kẻ phân cách từ dọc (1px) thành ngang (100%) */
     #controls hr {
-        height: 18px; /* Chiều cao vạch */
-        width: 1px;
-        background-color: #ccc;
+        width: 100%;
+        height: 1px;
+        background-color: #e0e0e0;
         border: none;
-        margin: 0; 
+        margin: 4px 0; 
     }
     .redd-text { color: #df2525 }
     .red-text { color: #d32f2f; font-weight: bold; }
